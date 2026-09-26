@@ -1,3 +1,5 @@
+#include "sim/signal.hpp"
+
 #include <cstdio>
 
 int main() {

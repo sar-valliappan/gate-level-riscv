@@ -1,0 +1,23 @@
+#include "sim/signal.hpp"
+
+#include <utility>
+
+namespace sim {
+
+bool operator==(SignalId a, SignalId b) { return a.value == b.value; }
+bool operator!=(SignalId a, SignalId b) { return !(a == b); }
+bool operator<(SignalId a, SignalId b) { return a.value < b.value; }
+
+SignalId SignalStore::alloc(std::string name, bool initial) {
+    SignalId id{static_cast<std::uint32_t>(signals_.size())};
+    signals_.push_back(Signal{std::move(name), initial});
+    return id;
+}
+
+bool SignalStore::get(SignalId id) const { return signals_[id.value].value; }
+
+void SignalStore::set(SignalId id, bool value) { signals_[id.value].value = value; }
+
+const std::string& SignalStore::name(SignalId id) const { return signals_[id.value].name; }
+
+} // namespace sim
