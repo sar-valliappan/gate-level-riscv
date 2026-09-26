@@ -1,3 +1,4 @@
+#include "logic/gates.hpp"
 #include "sim/signal.hpp"
 
 #include <cstdio>
