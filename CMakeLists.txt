@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(gate_level_riscv_core
     src/sim/signal.cpp
+    src/sim/event.cpp
 )
 target_include_directories(gate_level_riscv_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
@@ -17,3 +18,7 @@ enable_testing()
 add_executable(signal_test tests/sim/signal_test.cpp)
 target_link_libraries(signal_test PRIVATE gate_level_riscv_core)
 add_test(NAME signal_test COMMAND signal_test)
+
+add_executable(event_test tests/sim/event_test.cpp)
+target_link_libraries(event_test PRIVATE gate_level_riscv_core)
+add_test(NAME event_test COMMAND event_test)
