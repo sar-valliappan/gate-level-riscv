@@ -10,6 +10,7 @@ add_library(gate_level_riscv_core
     src/sim/gate.cpp
     src/sim/circuit.cpp
     src/logic/gates.cpp
+    src/logic/latch.cpp
 )
 target_include_directories(gate_level_riscv_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
