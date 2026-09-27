@@ -14,10 +14,10 @@ static bool contains(const std::vector<sim::GateId>& v, sim::GateId id) {
 
 static void add_gate_returns_sequential_ids() {
     sim::SignalStore store;
-    sim::SignalId a = store.alloc("A", false);
-    sim::SignalId b = store.alloc("B", false);
-    sim::SignalId out1 = store.alloc("OUT1", false);
-    sim::SignalId out2 = store.alloc("OUT2", false);
+    sim::SignalId a = store.alloc("A", sim::Bit::Zero);
+    sim::SignalId b = store.alloc("B", sim::Bit::Zero);
+    sim::SignalId out1 = store.alloc("OUT1", sim::Bit::X);
+    sim::SignalId out2 = store.alloc("OUT2", sim::Bit::X);
 
     sim::Circuit circuit;
     sim::GateId g1 = circuit.add_gate({a, b}, out1, 1);
@@ -29,9 +29,9 @@ static void add_gate_returns_sequential_ids() {
 
 static void gate_lookup_returns_correct_fields() {
     sim::SignalStore store;
-    sim::SignalId a = store.alloc("A", false);
-    sim::SignalId b = store.alloc("B", false);
-    sim::SignalId out = store.alloc("OUT", false);
+    sim::SignalId a = store.alloc("A", sim::Bit::Zero);
+    sim::SignalId b = store.alloc("B", sim::Bit::Zero);
+    sim::SignalId out = store.alloc("OUT", sim::Bit::X);
 
     sim::Circuit circuit;
     sim::GateId g = circuit.add_gate({a, b}, out, 3);
@@ -44,10 +44,10 @@ static void gate_lookup_returns_correct_fields() {
 
 static void fanout_tracks_correct_gates() {
     sim::SignalStore store;
-    sim::SignalId a = store.alloc("A", false);
-    sim::SignalId b = store.alloc("B", false);
-    sim::SignalId out1 = store.alloc("OUT1", false);
-    sim::SignalId out2 = store.alloc("OUT2", false);
+    sim::SignalId a = store.alloc("A", sim::Bit::Zero);
+    sim::SignalId b = store.alloc("B", sim::Bit::Zero);
+    sim::SignalId out1 = store.alloc("OUT1", sim::Bit::X);
+    sim::SignalId out2 = store.alloc("OUT2", sim::Bit::X);
 
     sim::Circuit circuit;
     // g1 reads both a and b; g2 reads only a
@@ -65,8 +65,8 @@ static void fanout_tracks_correct_gates() {
 
 static void signal_with_no_fanout_returns_empty() {
     sim::SignalStore store;
-    sim::SignalId a = store.alloc("A", false);
-    sim::SignalId out = store.alloc("OUT", false);
+    sim::SignalId a = store.alloc("A", sim::Bit::Zero);
+    sim::SignalId out = store.alloc("OUT", sim::Bit::X);
 
     sim::Circuit circuit;
     assert(circuit.fanout_of(a).empty());

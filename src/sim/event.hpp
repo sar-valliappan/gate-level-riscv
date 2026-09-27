@@ -13,7 +13,7 @@ struct Event {
     std::uint64_t time;
     std::uint64_t seq;          // insertion-order
     SignalId signal;
-    bool new_value;
+    Bit new_value;
 };
 
 namespace detail {
@@ -30,7 +30,7 @@ class EventQueue {
 public:
     EventQueue() = default;
 
-    void schedule(std::uint64_t time, SignalId signal, bool new_value);
+    void schedule(std::uint64_t time, SignalId signal, Bit new_value);
     std::optional<Event> pop();
     bool is_empty() const;
 

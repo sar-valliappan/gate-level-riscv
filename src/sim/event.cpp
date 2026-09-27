@@ -11,7 +11,7 @@ bool EventOrder::operator()(const Event& a, const Event& b) const {
 
 } // namespace detail
 
-void EventQueue::schedule(std::uint64_t time, SignalId signal, bool new_value) {
+void EventQueue::schedule(std::uint64_t time, SignalId signal, Bit new_value) {
     std::uint64_t seq = next_seq_++;
     heap_.push(Event{time, seq, signal, new_value});
 }

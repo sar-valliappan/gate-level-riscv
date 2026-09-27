@@ -20,8 +20,9 @@ struct Gate {
     SignalId output;
     std::uint64_t delay;
 
-    // Universal gate (NAND)
-    bool eval(const SignalStore& store) const;
+    // Universal gate (NAND), evaluated with X propagation:
+    // 0 NAND anything is 1, 1 NAND 1 is 0, and any other combination with X is X.
+    Bit eval(const SignalStore& store) const;
 };
 
 } // namespace sim

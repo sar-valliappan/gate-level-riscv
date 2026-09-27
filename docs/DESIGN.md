@@ -53,14 +53,18 @@ Each module's `.hpp` declares its types/functions; the matching `.cpp` in the sa
 
 ### Signal representation
 
+Signals are **three-valued**: `Zero`, `One`, or `X` (unknown).
+
 ```cpp
 struct SignalId {
     uint32_t value;
 };
 
+enum class Bit : uint8_t { Zero, One, X };
+
 struct Signal {
     std::string name;
-    bool value;
+    Bit value;
 };
 
 class SignalStore {
@@ -75,7 +79,7 @@ struct Event {
     uint64_t time;
     uint64_t seq;          // insertion-order tiebreaker
     SignalId signal;
-    bool new_value;
+    Bit new_value;
 };
 
 class EventQueue {
@@ -99,8 +103,10 @@ struct Gate {
 };
 ```
 
-Every other gate (NOT, AND, OR, NOR, XOR, XNOR) is a reusable function built once from NAND gates. Every composite gate costs *multiple* simulated
-NAND delays in series (e.g. XOR is 4 delays, not 1), so timing behavior downstream reflects per-NAND delay, not per-operator delay.
+`Gate::eval` implements 4-valued NAND with `X` propagation.
+
+Every other gate (NOT, AND, OR, NOR, XOR, XNOR) is a reusable function built once from NAND gates. Every composite gate costs *multiple* simulated NAND delays in series (e.g. XOR is 4 delays, not 1), so timing behavior downstream reflects per-NAND delay, not per-operator delay. 
+A gate's output signal is allocated as `X` at construction time unless it is part of a bistable feedback pair (e.g. an SR/D latch's `q`/`q_not`), which must be seeded with a concrete `Zero`/`One` to break the loop's symmetry.
 
 ### Circuit / fanout tracking
 
