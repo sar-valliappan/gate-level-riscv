@@ -38,18 +38,28 @@ Gate: How to store gates
 
 Signal: bool vs. tri-state values
 
-**Decision:** `Signal::value` is `Bit`, a three-valued enum (`Zero`, `One`, `X`), not `bool`. `Gate::eval` implements 4-valued NAND: a `0` on either input forces the output to `1` regardless of the other input, even if that other input is `X`; otherwise any `X` input makes the result `X`.
+**Decision:** `Signal::value` is `Bit`, a three-valued enum (`Zero`, `One`, `X`), not `bool`. `Gate::eval` implements 4-valued NAND, where a `0` input forces the output high even against an `X`.
 
-**Why:** Every gate output needs *some* initial value before it can be evaluated, and a plain `bool` default is a lie — it looks like a settled `0` or `1` even though nothing has computed it yet. `X` gives that default an honest meaning ("not yet computed"), and it lets a circuit represent an uninitialized register or an undriven bus the way real HDLs (Verilog's `x`) do.
+**Why:** Every gate output needs an initial value before it's ever evaluated, and a `bool` default is indistinguishable from a real settled value, whereas `X` honestly means "not yet computed."
 
-**Tradeoff accepted:** Every consumer of a signal's value (tests, and any future waveform output) must handle three cases instead of two. Feedback pairs in bistable elements (SR/D latch `q`/`q_not`) still need a concrete `Zero`/`One` seed rather than `X` — two cross-coupled NAND gates both reading `X` from each other evaluate to `X` forever and never converge, so `test_utils::initialize()` alone can't resolve them the way it does non-cyclic gate outputs.
+**Tradeoff accepted:** Every consumer of a signal's value must handle three cases instead of two.
 
 ---
 
 Simulation: stale in-flight events on reconvergent paths
 
-**Decision:** `test_utils::settle()` tracks, per signal, the value of its most recently scheduled-but-not-yet-applied event. A gate re-evaluation compares against that in-flight target (falling back to the committed `SignalStore` value if none is pending) rather than against the committed value alone, and a popped event whose value no longer matches the tracked target is discarded instead of applied.
+**Decision:** `test_utils::settle()` tracks the value of its latest scheduled-but-not-yet-applied event per signal, and compares against that instead of the committed store value when deciding whether a gate's output changed.
 
-**Why:** A signal with reconvergent fanout (e.g. XOR's shared NAND term, which feeds two gates that also read the changing input directly) can be re-evaluated twice for a single input change before either resulting event fires. Comparing only against the committed store value let the first, since-superseded evaluation schedule an event that later got applied verbatim, permanently locking in a wrong value with no further events left to correct it — this was caught by `gates_test`'s `xor_truth_table` case for `(1, 1)`, which settled to `1` instead of `0`.
+**Why:** A signal with reconvergent fanout (e.g. XOR's shared NAND term) can be re-evaluated twice for one input change before either resulting event fires. Comparing only against the committed value let the first, since-superseded evaluation schedule an event that never got corrected, permanently locking in a wrong value.
 
-**Tradeoff accepted:** `settle()` now does a small amount of extra bookkeeping (one hash map, keyed by signal) that a simpler priority-queue drain didn't need. This keeps the fix local to the test harness's simulation loop rather than changing `EventQueue`'s own ordering contract, which `event_test.cpp` relies on to deliver same-timestamp events for one signal in insertion order.
+**Tradeoff accepted:** `settle()` needs one extra hash map that a plain priority-queue drain didn't. Kept local to the test harness rather than changing `EventQueue`'s own ordering contract.
+
+---
+
+Simulation: bootstrapping bistable feedback loops
+
+**Decision:** `test_utils::deposit()` schedules a signal's starting value as a time-0 event, like a Verilog `initial` block. `SignalStore::force()`/`release()` pin a signal to a concrete level regardless of what its driving gate computes.
+
+**Why:** A cross-coupled NAND latch's `q`/`q_not` pair is two gates each reading the other's `X`, which evaluates to `X` forever — no sequence of ordinary events resolves that symmetry, the same way real hardware needs an explicit reset.
+
+**Tradeoff accepted:** Every `Signal` carries a `forced` bool that `SignalStore::set()` must check.

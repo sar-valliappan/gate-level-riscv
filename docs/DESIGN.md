@@ -65,12 +65,15 @@ enum class Bit : uint8_t { Zero, One, X };
 struct Signal {
     std::string name;
     Bit value;
+    bool forced = false;   // true while overridden via SignalStore::force()
 };
 
 class SignalStore {
     std::vector<Signal> signals;
 };
 ```
+
+`SignalStore::set()` (how a gate drives its output) is a no-op while a signal is `forced`. `force()`/`release()` are the only way to override a signal regardless of what's actually driving it — see "Bootstrapping bistable feedback loops" below.
 
 ### Event queue
 
@@ -105,8 +108,13 @@ struct Gate {
 
 `Gate::eval` implements 4-valued NAND with `X` propagation.
 
-Every other gate (NOT, AND, OR, NOR, XOR, XNOR) is a reusable function built once from NAND gates. Every composite gate costs *multiple* simulated NAND delays in series (e.g. XOR is 4 delays, not 1), so timing behavior downstream reflects per-NAND delay, not per-operator delay. 
-A gate's output signal is allocated as `X` at construction time unless it is part of a bistable feedback pair (e.g. an SR/D latch's `q`/`q_not`), which must be seeded with a concrete `Zero`/`One` to break the loop's symmetry.
+Every other gate (NOT, AND, OR, NOR, XOR, XNOR) is a reusable function built once from NAND gates. Every composite gate costs *multiple* simulated NAND delays in series (e.g. XOR is 4 delays, not 1), so timing behavior downstream reflects per-NAND delay, not per-operator delay.
+Every gate's output signal, including a bistable feedback pair like an SR/D latch's `q`/`q_not`, is allocated as `X` at construction time; nothing is special-cased in the netlist itself. Getting a fresh circuit to a defined starting state is the caller's job.
+
+### Bootstrapping bistable feedback loops
+
+- **`initial`-block-style deposits:** scheduling each input's currently stored value onto it as a time-0 `Event` then draining the queue once is enough to carry every purely-combinational signal from `X` to its correct value.
+- **`force`/`release`:** a cross-coupled feedback pair (`q`/`q_not`) with no inputs driven yet is two gates each reading the other's `X`, which evaluates to `X` forever, the same way a real cross-coupled NAND latch has no defined power-on state without an explicit reset. Solve this issue by forcing one side of the loop to a concrete level regardless of what its driving gate computes.
 
 ### Circuit / fanout tracking
 

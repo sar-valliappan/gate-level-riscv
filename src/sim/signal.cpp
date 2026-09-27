@@ -25,7 +25,17 @@ SignalId SignalStore::alloc(std::string name, Bit initial) {
 
 Bit SignalStore::get(SignalId id) const { return signals_[id.value].value; }
 
-void SignalStore::set(SignalId id, Bit value) { signals_[id.value].value = value; }
+void SignalStore::set(SignalId id, Bit value) {
+    if (signals_[id.value].forced) return;
+    signals_[id.value].value = value;
+}
+
+void SignalStore::force(SignalId id, Bit value) {
+    signals_[id.value].value = value;
+    signals_[id.value].forced = true;
+}
+
+void SignalStore::release(SignalId id) { signals_[id.value].forced = false; }
 
 const std::string& SignalStore::name(SignalId id) const { return signals_[id.value].name; }
 

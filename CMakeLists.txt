@@ -14,6 +14,10 @@ add_library(gate_level_riscv_core
 )
 target_include_directories(gate_level_riscv_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
+add_library(test_utils tests/test_utils.cpp)
+target_include_directories(test_utils PUBLIC ${CMAKE_SOURCE_DIR}/tests)
+target_link_libraries(test_utils PUBLIC gate_level_riscv_core)
+
 add_executable(gate-level-riscv src/main.cpp)
 target_link_libraries(gate-level-riscv PRIVATE gate_level_riscv_core)
 
@@ -34,3 +38,11 @@ add_test(NAME gate_test COMMAND gate_test)
 add_executable(circuit_test tests/sim/circuit_test.cpp)
 target_link_libraries(circuit_test PRIVATE gate_level_riscv_core)
 add_test(NAME circuit_test COMMAND circuit_test)
+
+add_executable(gates_test tests/logic/gates_test.cpp)
+target_link_libraries(gates_test PRIVATE test_utils)
+add_test(NAME gates_test COMMAND gates_test)
+
+add_executable(latch_test tests/logic/latch_test.cpp)
+target_link_libraries(latch_test PRIVATE test_utils)
+add_test(NAME latch_test COMMAND latch_test)

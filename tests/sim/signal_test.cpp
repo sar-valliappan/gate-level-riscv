@@ -25,6 +25,25 @@ static void set_signal_updates_value() {
     assert(store.get(a) == sim::Bit::One);
 }
 
+static void force_overrides_regardless_of_set() {
+    sim::SignalStore store;
+    sim::SignalId a = store.alloc("A", sim::Bit::Zero);
+
+    store.force(a, sim::Bit::One);
+    store.set(a, sim::Bit::Zero);
+    assert(store.get(a) == sim::Bit::One);
+}
+
+static void release_hands_control_back_to_set() {
+    sim::SignalStore store;
+    sim::SignalId a = store.alloc("A", sim::Bit::Zero);
+
+    store.force(a, sim::Bit::One);
+    store.release(a);
+    store.set(a, sim::Bit::Zero);
+    assert(store.get(a) == sim::Bit::Zero);
+}
+
 static void signal_ids_are_distinct() {
     sim::SignalStore store;
     sim::SignalId a = store.alloc("A", sim::Bit::Zero);
@@ -42,6 +61,8 @@ int main() {
     alloc_and_read_signal();
     alloc_defaults_to_unknown();
     set_signal_updates_value();
+    force_overrides_regardless_of_set();
+    release_hands_control_back_to_set();
     signal_ids_are_distinct();
     to_char_renders_each_level();
     std::puts("signal_test: all tests passed");

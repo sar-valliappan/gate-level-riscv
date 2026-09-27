@@ -29,6 +29,7 @@ char to_char(Bit bit);
 struct Signal {
     std::string name;
     Bit value;
+    bool forced = false;
 };
 
 /// A collection of signals in the simulation
@@ -38,7 +39,16 @@ public:
 
     SignalId alloc(std::string name, Bit initial);
     Bit get(SignalId id) const;
+
+    /// Drives a new value onto a signal.
     void set(SignalId id, Bit value);
+
+    /// Overrides a signal to `value` regardless of what its driving gate computes, until `release()` is called
+    void force(SignalId id, Bit value);
+
+    /// Hands control of a forced signal back to its driving gate.
+    void release(SignalId id);
+
     const std::string& name(SignalId id) const;
 
 private:
