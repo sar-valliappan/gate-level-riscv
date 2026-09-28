@@ -11,6 +11,7 @@ add_library(gate_level_riscv_core
     src/sim/circuit.cpp
     src/logic/gates.cpp
     src/logic/latch.cpp
+    src/logic/flipflop.cpp
 )
 target_include_directories(gate_level_riscv_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
@@ -46,3 +47,7 @@ add_test(NAME gates_test COMMAND gates_test)
 add_executable(latch_test tests/logic/latch_test.cpp)
 target_link_libraries(latch_test PRIVATE test_utils)
 add_test(NAME latch_test COMMAND latch_test)
+
+add_executable(flipflop_test tests/logic/flipflop_test.cpp)
+target_link_libraries(flipflop_test PRIVATE test_utils)
+add_test(NAME flipflop_test COMMAND flipflop_test)

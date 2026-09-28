@@ -59,4 +59,13 @@ void bootstrap_latch(const sim::Circuit& circuit, sim::SignalStore& store, sim::
     store.release(feedback_seed);
 }
 
+void bootstrap_flipflop(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, sim::SignalId master_feedback, sim::SignalId slave_feedback, sim::Bit seed_value, std::initializer_list<sim::SignalId> inputs) {
+    store.force(master_feedback, seed_value);
+    store.force(slave_feedback, seed_value);
+    deposit(store, queue, inputs);
+    settle(circuit, store, queue);
+    store.release(master_feedback);
+    store.release(slave_feedback);
+}
+
 } // namespace test_utils
