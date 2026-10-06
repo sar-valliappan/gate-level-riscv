@@ -12,6 +12,10 @@ add_library(gate_level_riscv_core
     src/logic/gates.cpp
     src/logic/latch.cpp
     src/logic/flipflop.cpp
+    src/logic/register.cpp
+    src/logic/mux.cpp
+    src/cpu/isa.cpp
+    src/cpu/alu.cpp
 )
 target_include_directories(gate_level_riscv_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
@@ -51,3 +55,23 @@ add_test(NAME latch_test COMMAND latch_test)
 add_executable(flipflop_test tests/logic/flipflop_test.cpp)
 target_link_libraries(flipflop_test PRIVATE test_utils)
 add_test(NAME flipflop_test COMMAND flipflop_test)
+
+add_executable(register_test tests/logic/register_test.cpp)
+target_link_libraries(register_test PRIVATE test_utils)
+add_test(NAME register_test COMMAND register_test)
+
+add_executable(register_file_test tests/logic/register_file_test.cpp)
+target_link_libraries(register_file_test PRIVATE test_utils)
+add_test(NAME register_file_test COMMAND register_file_test)
+
+add_executable(mux_test tests/logic/mux_test.cpp)
+target_link_libraries(mux_test PRIVATE test_utils)
+add_test(NAME mux_test COMMAND mux_test)
+
+add_executable(isa_test tests/cpu/isa_test.cpp)
+target_link_libraries(isa_test PRIVATE gate_level_riscv_core)
+add_test(NAME isa_test COMMAND isa_test)
+
+add_executable(alu_test tests/cpu/alu_test.cpp)
+target_link_libraries(alu_test PRIVATE test_utils)
+add_test(NAME alu_test COMMAND alu_test)
