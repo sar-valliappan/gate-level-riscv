@@ -6,13 +6,7 @@
 
 namespace test_utils {
 
-namespace {
-
-constexpr std::size_t kDefaultMaxEvents = 10000;
-
-} // namespace
-
-void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue) {
+void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, std::size_t max_events) {
     std::unordered_map<std::uint32_t, sim::Bit> pending;
 
     auto current_target = [&](sim::SignalId sig) {
@@ -23,8 +17,8 @@ void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueu
     std::size_t events_processed = 0;
     while (auto event = queue.pop()) {
         events_processed++;
-        if (events_processed > kDefaultMaxEvents) {
-            std::fprintf(stderr, "did not settle within %zu events\n", kDefaultMaxEvents);
+        if (events_processed > max_events) {
+            std::fprintf(stderr, "did not settle within %zu events\n", max_events);
             std::abort();
         }
 
@@ -68,11 +62,11 @@ void bootstrap_flipflop(const sim::Circuit& circuit, sim::SignalStore& store, si
     store.release(slave_feedback);
 }
 
-void bootstrap_register(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, const std::vector<sim::SignalId>& master_feedbacks, const std::vector<sim::SignalId>& slave_feedbacks, sim::Bit seed_value, const std::vector<sim::SignalId>& inputs) {
+void bootstrap_register(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, const std::vector<sim::SignalId>& master_feedbacks, const std::vector<sim::SignalId>& slave_feedbacks, sim::Bit seed_value, const std::vector<sim::SignalId>& inputs, std::size_t max_events) {
     for (sim::SignalId feedback : master_feedbacks) store.force(feedback, seed_value);
     for (sim::SignalId feedback : slave_feedbacks) store.force(feedback, seed_value);
     deposit(store, queue, inputs);
-    settle(circuit, store, queue);
+    settle(circuit, store, queue, max_events);
     for (sim::SignalId feedback : master_feedbacks) store.release(feedback);
     for (sim::SignalId feedback : slave_feedbacks) store.release(feedback);
 }

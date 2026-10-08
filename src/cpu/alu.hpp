@@ -14,7 +14,7 @@ namespace alu {
 /// Gate-level ALU operation selection
 enum class AluOp : std::uint8_t { Add = 0b00, Sub = 0b01, And = 0b10, Slt = 0b11 };
 
-/// ALU control decode: maps an instruction to the ALU operation its execute stage needs.
+/// AMps an instruction to the ALU operation its execute stage needs.
 std::optional<AluOp> decode_alu_op(isa::Mnemonic mnemonic);
 
 /// Splits an AluOp into its two gate-level control bits.
