@@ -7,14 +7,16 @@
 #include "sim/circuit.hpp"
 #include "sim/event.hpp"
 #include "sim/signal.hpp"
+#include "waveform.hpp"
 
 namespace test_utils {
 
 /// Drains the event queue, applying each event and re-triggering fanout until no events remain.
 /// Aborts if more than `max_events` are processed without settling; the default suits the small
 /// per-module circuits most tests build. A full datapath's register file has enough gates that it
-/// needs a much larger budget (see datapath_test.cpp).
-void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, std::size_t max_events = 10000);
+/// needs a much larger budget (see datapath_test.cpp). If `trace` is given, every applied event is
+/// fed to it (a no-op for signals it isn't watching).
+void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, std::size_t max_events = 10000, waveform::Waveform* trace = nullptr);
 
 /// Deposits each signal's currently stored value onto it via a time-0 event.
 /// Must be followed by `settle()` for the deposits to propagate.

@@ -6,7 +6,7 @@
 
 namespace test_utils {
 
-void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, std::size_t max_events) {
+void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, std::size_t max_events, waveform::Waveform* trace) {
     std::unordered_map<std::uint32_t, sim::Bit> pending;
 
     auto current_target = [&](sim::SignalId sig) {
@@ -29,6 +29,7 @@ void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueu
         if (it != pending.end()) pending.erase(it);
 
         store.set(event->signal, event->new_value);
+        if (trace) trace->record(event->signal, event->time, event->new_value);
         for (sim::GateId gate_id : circuit.fanout_of(event->signal)) {
             const sim::Gate& gate = circuit.gate(gate_id);
             sim::Bit new_output = gate.eval(store);
