@@ -1,34 +1,14 @@
 #pragma once
-// Test-only helper.
+// Test-only re-export of sim::simulate under the test_utils:: name tests already use.
 
-#include <cstddef>
-#include <vector>
-
-#include "sim/circuit.hpp"
-#include "sim/event.hpp"
-#include "sim/signal.hpp"
-#include "waveform.hpp"
+#include "sim/simulate.hpp"
 
 namespace test_utils {
 
-/// Drains the event queue, applying each event and re-triggering fanout until no events remain.
-/// Aborts if more than `max_events` are processed without settling; the default suits the small
-/// per-module circuits most tests build. A full datapath's register file has enough gates that it
-/// needs a much larger budget (see datapath_test.cpp). If `trace` is given, every applied event is
-/// fed to it (a no-op for signals it isn't watching).
-void settle(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, std::size_t max_events = 10000, waveform::Waveform* trace = nullptr);
-
-/// Deposits each signal's currently stored value onto it via a time-0 event.
-/// Must be followed by `settle()` for the deposits to propagate.
-void deposit(sim::SignalStore& store, sim::EventQueue& queue, const std::vector<sim::SignalId>& signals);
-
-/// Bootstraps one bistable feedback pair (an SR/D latch's `q`/`q_not`): force, deposit+settle `inputs`, release.
-void bootstrap_latch(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, sim::SignalId feedback_seed, sim::Bit seed_value, const std::vector<sim::SignalId>& inputs);
-
-/// Bootstraps a flip-flop's master and slave feedback pairs together (must be forced in the same pass; see DECISIONS.md).
-void bootstrap_flipflop(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, sim::SignalId master_feedback, sim::SignalId slave_feedback, sim::Bit seed_value, const std::vector<sim::SignalId>& inputs);
-
-/// Bootstraps every bit of a `build_register` output together, same as `bootstrap_flipflop` but N-wide.
-void bootstrap_register(const sim::Circuit& circuit, sim::SignalStore& store, sim::EventQueue& queue, const std::vector<sim::SignalId>& master_feedbacks, const std::vector<sim::SignalId>& slave_feedbacks, sim::Bit seed_value, const std::vector<sim::SignalId>& inputs, std::size_t max_events = 10000);
+using sim::settle;
+using sim::deposit;
+using sim::bootstrap_latch;
+using sim::bootstrap_flipflop;
+using sim::bootstrap_register;
 
 } // namespace test_utils
